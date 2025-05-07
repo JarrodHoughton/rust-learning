@@ -3,20 +3,32 @@ use macroquad::rand::gen_range;
 
 const GRID_SIZE: usize = 50;
 const CELL_SIZE: usize = 10;
+const WINDOW_WIDTH: f32 = (GRID_SIZE * CELL_SIZE) as f32;
 
 #[macroquad::main("Game of Life")]
 async fn main() {
-    let mut is_paused = false;
+    let mut is_press_to_play = false;
     let mut grid = (0..(GRID_SIZE * GRID_SIZE))
         .map(|_| gen_range(0, 10) < 4)
         .collect();
     
-    // println!("Initial grid: {:?}", grid);
-
     loop {
         clear_background(BLACK);
         
         draw_grid(&mut grid);
+
+        // render frames at screen refresh rate
+        if !is_press_to_play {
+            process_ruleset(&mut grid);
+        // render frames when enter key is pressed down
+        } else if is_key_down(KeyCode::Enter) {
+            process_ruleset(&mut grid);
+        }
+
+        // show helper text
+        draw_fps(20.0);
+        draw_controls(40.0);
+        draw_current_mode(is_press_to_play, 120.0);
 
         if is_mouse_button_down(MouseButton::Left) {
             let mouse_pos = mouse_position();
@@ -38,20 +50,34 @@ async fn main() {
             }
         }
 
+        // toggle play mode
         if is_key_pressed(KeyCode::Space) {
-            is_paused = !is_paused;
+            is_press_to_play = !is_press_to_play;
         }
-
-        if !is_paused {
-            if is_key_down(KeyCode::Enter) {
-                process_ruleset(&mut grid);
-            }
-        }
-
-        draw_fps();
 
         next_frame().await
     }
+}
+
+fn draw_controls (y_offset: f32) {
+    let y_spacing = 20.0;
+    draw_text("Controls:", WINDOW_WIDTH, y_offset, 20.0, WHITE);
+    draw_text("Press SPACE to toggle play mode: Live simulation or Press to play", WINDOW_WIDTH, y_offset + y_spacing, 20.0, WHITE);
+    draw_text("Left click to add cells, right click to remove cells", WINDOW_WIDTH, y_offset + y_spacing*2.0, 20.0, WHITE);
+    draw_text("Hold ENTER to step through generations in 'Press to play' mode", WINDOW_WIDTH, y_offset + y_spacing*3.0, 20.0, WHITE);
+}
+
+fn draw_current_mode(is_press_to_play: bool, y_offset: f32) {
+    if is_press_to_play {
+        draw_text("Mode: Press to play mode", WINDOW_WIDTH, y_offset, 20.0, WHITE);
+    } else {
+        draw_text("Mode: Live simulation", WINDOW_WIDTH, y_offset, 20.0, WHITE);
+    }
+}
+
+fn draw_fps(y_offset: f32) {
+    let fps = get_fps();
+    draw_text(&format!("FPS: {}", fps), WINDOW_WIDTH, y_offset, 20.0, WHITE);
 }
 
 fn process_ruleset(grid: &mut Vec<bool>) {
