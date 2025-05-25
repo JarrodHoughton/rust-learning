@@ -1,8 +1,8 @@
 use std::io;
 
 fn main() {
-    let mut a: u128 = 1;
-    let mut b: u128 = 1;
+    let mut a: usize = 1;
+    let mut b: usize = 1;
 
     println!("Please enter a number:");
 
@@ -11,7 +11,7 @@ fn main() {
         .read_line(&mut input)
         .expect("Failed to read line");
 
-    let n: u128 = match input.trim().parse() {
+    let n: usize = match input.trim().parse() {
         Ok(num) => num,
         Err(_) => {
             println!("Invalid input, using default value of 1000");
@@ -21,7 +21,7 @@ fn main() {
 
     for _ in 1..n {
         println!("{}", a);
-        let c: u128 = a + b;
+        let c: usize = a + b;
         a = b;
         b = c;
     }
